@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>留言板</title>
+    <link rel="stylesheet" href="./assets/bootstrap.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="display-6">留言板</h1>
+      <hr />
+      <ul id="messages" class="list-unstyled">
+        <!-- <li class="media">
+          <img class="mr-3" src="./assets/avatar.png" alt="张三" />
+          <div class="media-body">
+            <h4>张三</h4>
+            <p>哈哈哈哈哈哈哈哈哈哈哈</p>
+            <p>2019-06-07</p>
+          </div>
+        </li> -->
+      </ul>
+      <hr />
+      <form>
+        <div class="form-group">
+          <label for="txt_name">称呼：</label>
+          <input class="form-control" id="txt_name" type="text" />
+        </div>
+        <div class="form-group">
+          <label for="txt_content">留言：</label>
+          <textarea
+            class="form-control"
+            id="txt_content"
+            cols="80"
+            rows="5"
+          ></textarea>
+        </div>
+        <button id="btn_send" type="button" class="btn btn-primary">提交</button>
+      </form>
+    </div>
+    <script src="./jquery-1.8.1.js"></script>
+
+    <script>
+      // 获取留言并显示
+      function getAndShow() {
+        $.get('./getmsg', res => {
+          let {code,data} = res;
+
+          $('#messages').html('') ;// 清空显示区域
+
+          if(code === 200){
+            data.reverse()
+            data.forEach( item =>{
+              let {name,content,dt} = item;
+              var str = `
+                <li class="media">
+                  <img class="mr-3" src="./assets/avatar.png" alt="张三" />
+                  <div class="media-body">
+                    <h4>${name}</h4>
+                    <p>${content}</p>
+                    <p>${(new Date(dt)).toLocaleString()}</p>
+                  </div>
+                </li>
+              `
+              $('#messages').append(str)
+            })
+          }
+        })
+      }
+      
+      getAndShow()
+    
+      // 添加留言
+      $('#btn_send').click(()=>{
+        // 1. 获取用户输入 
+        let name = $("#txt_name").val().trim()
+        let content = $("#txt_content").val().trim()
+        // 2. 简单判断是否为空
+        if(name === "" || content === ""){
+          alert('不能为空')
+          return
+        }
+        // 3. 发请求，添加留言
+        $.post('./addmsg', {
+          name,
+          content
+        },function(res){
+          let {code ,msg} = res;
+          if(code === 200){
+            // 添加成功
+            // 1. 清空留言区域
+            $("#txt_name").val('')
+            $("#txt_content").val('')
+            // 2. 重新请求数据
+            getAndShow()
+          }
+        })
+      })
+    </script>
+  </body>
+</html>

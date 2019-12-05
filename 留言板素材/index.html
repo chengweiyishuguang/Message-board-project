@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>留言板</title>
+    <link rel="stylesheet" href="./assets/bootstrap.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="display-6">留言板</h1>
+      <hr />
+      <ul id="messages" class="list-unstyled">
+        <li class="media">
+          <img class="mr-3" src="./assets/avatar.png" alt="张三" />
+          <div class="media-body">
+            <h4>张三</h4>
+            <p>哈哈哈哈哈哈哈哈哈哈哈</p>
+            <p>2019-06-07</p>
+          </div>
+        </li>
+      </ul>
+      <hr />
+      <form>
+        <div class="form-group">
+          <label for="txt_name">称呼：</label>
+          <input class="form-control" id="txt_name" type="text" />
+        </div>
+        <div class="form-group">
+          <label for="txt_content">留言：</label>
+          <textarea
+            class="form-control"
+            id="txt_content"
+            cols="80"
+            rows="5"
+          ></textarea>
+        </div>
+        <button id="btn_send" type="button" class="btn btn-primary">
+          提交
+        </button>
+      </form>
+    </div>
+    <script src="./jquery-1.8.1.js"></script>
+
+    <script>
+
+      // 获取并且显示留言
+      function getAndShow(){
+        $.ajax({
+          url: 'http://192.168.186.67:3005/message/getmsg',
+          type: 'get',
+          // data,
+          success:function(res){
+            // 清空前面的留言内容
+            $('#messages').empty();
+
+            // 响应体：它就是本次请求内容
+            // console.log(res); 
+            // console.log(Array.isArray(res));
+            
+            // 
+            // Array.isArray(obj) 
+            // 判断 obj是不是一个数组，是，返回true,否，返回false
+             // 循环，对数组的每一个元素，它就是一个对象，
+             //      把这个对象转换成一个li标签，插入到ul中。
+             res.forEach(function(item,idx){
+              //  console.log(idx,item.name,item.content);
+               var dt = new Date( item.created )
+               var str = `<li class="media">
+                  <img class="mr-3" src="./assets/avatar.png" alt="张三" />
+                  <div class="media-body">
+                    <h4>${item.name}</h4>
+                    <p>${item.content}</p>
+                    <p>${dt.toLocaleString()}</p>
+                  </div>
+                </li>`
+                console.log(str)
+                $('#messages').append(str)
+             })
+          }
+        })
+      }
+      // 显示留言内容
+      $(function(){
+        // alert(1)
+        // 发请求，从服务器获取全部的留言内容
+        getAndShow()
+        
+      })
+    
+
+    $('#btn_send').click(function(){
+    // 添加留言
+    // 1. 收集用户的信息
+    var myName = $('#txt_name').val().trim()
+    var myContent = $('#txt_content').val().trim()
+
+    console.log(myName,myContent)
+    // 2。做一个简单的判断：用户名和留言内容不能为空
+    if(myName === '' || myContent === ''){
+      // 只要有一个为空，
+      alert('不能为空')
+      return 
+    }
+    // 3.发ajax请求
+    $.ajax({
+      url: 'http://192.168.186.67:3005/message/addmsg',
+      type: 'post',
+      data: {
+        // 属性名是接口需要的参数，属性值是对应要传的值
+        name: myName,
+        content: myContent
+      },
+      success:function(res){
+        console.log(res);
+      // 4. 根据请求的结果，做后续的操作
+      // 4.1重新加载留言内容
+        getAndShow()
+
+      // 4.2清空留言区域
+         $('#txt_name').val('')
+         $('#txt_content').val('')
+      }
+    })
+
+    })
+    
+    
+    </script>
+  </body>
+</html>
